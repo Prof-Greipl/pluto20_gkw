@@ -1,9 +1,15 @@
 package de.landshut.pluto20_gkw;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -17,39 +23,45 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate");
     }
 
+    // Laden des Menus
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate( R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent intent;
+        switch (item.getItemId()){
+            case R.id.menu_main_create_account:
+                intent = new Intent( getApplication(), CreateAccountActivity.class);
+                startActivity( intent );
+                return true;
+
+            case R.id.menu_main_manage_account:
+                Toast.makeText( getApplicationContext(), "ManageAccount", Toast.LENGTH_LONG).show();
+                return true;
+
+            case R.id.menu_main_post:
+                intent = new Intent( getApplication(), PostActivity.class);
+                startActivity( intent );
+                return true;
+
+            case R.id.menu_main_signin:
+                intent = new Intent( getApplication(), SignInActivity.class);
+                startActivity( intent );
+                return true;
+
+        }
+        return true;
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
         Log.d(TAG, "onStart");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.d(TAG, "onRestart");
     }
 }
