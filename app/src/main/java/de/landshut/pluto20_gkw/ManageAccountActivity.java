@@ -23,9 +23,11 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
     Button mButtonSignOut, mButtonDeleteAccount, mButtonSendActivationMail;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        TextView textview = (TextView) findViewById( R.id.manageAccountTechnicalId);
+
         setContentView(R.layout.activity_manage_account);
+        TextView textview = (TextView) findViewById( R.id.manageAccountTechnicalId);
 
         // UI Elemente-Initialiseren
         mEmail = findViewById( R.id.manageAccountEmail );
@@ -41,15 +43,16 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
         mButtonSendActivationMail.setOnClickListener( this );
         mButtonDeleteAccount.setOnClickListener( this );
 
-        // Nur zur Sicherheit; die aufrufende Activity muss garantieren,
-        // dass es einen user gibt.
+        // Setze Informationen über den Account, wenn der user nicht null ist.
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user==null)
+        if ( user==null )
             finish();
+        else {
+            mEmail.setText( user.getEmail() );
+            mAccountState.setText("Account verified:" + user.isEmailVerified());
+            mTechnicalId.setText( user.getUid() );
+        }
 
-        mEmail.setText( "E-Mail: "+ user.getEmail());
-        mTechnicalId.setText("Technical Id : "+user.getUid() );
-        mAccountState.setText("Account verified : " + user.isEmailVerified());
     }
 
     @Override
@@ -64,81 +67,81 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
                 return;
 
             case R.id.manageAccountButtonSendActivationMail:
-                // TODO: Ist das hier sinnvoll?
                 doSendActivationMail();
                 return;
         }
     }
 
-    private void doDeleteAccount() {
-        FirebaseUser user =  FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null){
-            Toast.makeText( getApplicationContext(), "Cannot delete account: not signed in! ", Toast.LENGTH_LONG).show();
-            return;
-        }
+    private void doSignOut() {
 
-        user.delete().addOnCompleteListener(
-                this,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()){
-                            Toast.makeText( getApplicationContext(), "Account deleted.", Toast.LENGTH_LONG).show();
-                        }
-                        else {
-                            Toast.makeText( getApplicationContext(), "Account deletion failed (check log)", Toast.LENGTH_LONG).show();
-                            Log.d(TAG,task.getException().getLocalizedMessage());
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            Toast.makeText(getApplicationContext(), "You are not signed in!", Toast.LENGTH_LONG).show();
+        }
+        else {
+            // Abmelden
+            FirebaseAuth.getInstance().signOut();
+            Toast.makeText(getApplicationContext(), "You are signed out.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void doDeleteAccount() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null){
+            Toast.makeText(getApplicationContext(), "Not deleted, as this needs sign in!", Toast.LENGTH_LONG).show();
+        }
+        else {
+            user.delete().addOnCompleteListener(
+                    this,
+                    new OnCompleteListener<Void>() {
+
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(getApplicationContext(), "Account deleted." , Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Account deletion failed.", Toast.LENGTH_LONG).show();
+                                Log.d(TAG, task.getException().getLocalizedMessage());
+                            }
                         }
                     }
-                }
-        );
+            );
+        }
     }
 
     private void doSendActivationMail() {
-        FirebaseUser user =  FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null){
-            Toast.makeText( getApplicationContext(), "Sending not possible: not signed in! ", Toast.LENGTH_LONG).show();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user==null) {
+            Toast.makeText(getApplicationContext(), "You must be signed in for this...", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // At this point we have a valid user object
-        if (user.isEmailVerified())
-        {
-            Toast.makeText( getApplicationContext(), "Account already verified.", Toast.LENGTH_LONG).show();
+        if (user.isEmailVerified()){
+            // User hat email bereits verifiziert
+            Toast.makeText(getApplicationContext(), "Your email is already verified. (No mail sent!)", Toast.LENGTH_LONG).show();
             return;
         }
 
         user.sendEmailVerification().addOnCompleteListener(
                 this,
                 new OnCompleteListener<Void>() {
+
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()){
-                            Toast.makeText( getApplicationContext(), "Verification mails sent.", Toast.LENGTH_LONG).show();
-                        }
-                        else {
-                            Toast.makeText( getApplicationContext(), "Sending mail failed (check log)", Toast.LENGTH_LONG).show();
-                            Log.d(TAG,task.getException().getLocalizedMessage());
+                        if (task.isSuccessful()) {
+                            Toast.makeText(getApplicationContext(), "Verification mail sent." , Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Sending mail failed.", Toast.LENGTH_LONG).show();
+                            Log.d(TAG, task.getException().getLocalizedMessage());
                         }
                     }
                 }
         );
+
     }
 
-    private void doSignOut() {
-        FirebaseUser user =  FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null){
-            Toast.makeText( getApplicationContext(), "Your are not signed in!", Toast.LENGTH_LONG).show();
-            return;
-        }
-        FirebaseAuth.getInstance().signOut();
-        user =  FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null){
-            Toast.makeText( getApplicationContext(), "Signed out.", Toast.LENGTH_LONG).show();
-        }
-        else {
-            Toast.makeText( getApplicationContext(), "Signed out failed.", Toast.LENGTH_LONG).show();
 
-        }
-    }
 }

@@ -34,10 +34,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<Post> mAdapter;
     ArrayList<Post> mPostList;
 
-    // TODO: Remove later: for testing only
-    String TEST_MAIL = "dieter.greipl@gmail.com";
-    String TEST_PASS = "123456";
-
     public static final String TAG = "xx MainActivity";
 
     @Override
@@ -91,87 +87,24 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         Intent intent;
         switch (item.getItemId()) {
-            case R.id.menu_1_TestAuthState:
-                doTestAuthState();
+            case R.id.menu_main_manage_account:
+                intent  = new Intent( getApplication(), ManageAccountActivity.class);
+                startActivity( intent );
                 return true;
-
-            case R.id.menu_2_CreateUser:
-                doCreateUser();
-                return true;
-
-            case R.id.menu_3_SignInTestUser:
-                doSignIn();
-                return true;
-
-            case R.id.menu_4_SignOutTestUser:
-                doSignOut();
-                return true;
-
-            case R.id.menu_5_DeleteTestUser:
-                doDeleteAccount();
-                return true;
-
-            case R.id.menu_6_SendResetPasswordMail:
-                doSendResetPasswordMail();
-                return true;
-
-            case R.id.menu_7_SendActivationMail:
-                doSendActivationMail();
-                return true;
-
         }
         return true;
     }
 
-    private void doSendActivationMail() {
-        Toast.makeText( getApplicationContext(), "NYI", Toast.LENGTH_LONG).show();
-    }
-
-    private void doSendResetPasswordMail() {
-        Toast.makeText( getApplicationContext(), "NYI", Toast.LENGTH_LONG).show();
-    }
-
-    private void doDeleteAccount() {
-        Toast.makeText( getApplicationContext(), "NYI", Toast.LENGTH_LONG).show();
-    }
-
-    private void doSignOut() {
-        Toast.makeText( getApplicationContext(), "NYI", Toast.LENGTH_LONG).show();
-    }
-
-    private void doSignIn() {
-        Toast.makeText( getApplicationContext(), "NYI", Toast.LENGTH_LONG).show();
-    }
-
-    private void doCreateUser() {
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(TEST_MAIL, TEST_PASS)
-                .addOnCompleteListener(
-                        this,
-                        new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful())
-                                    Toast.makeText( getApplicationContext(), "Account created.", Toast.LENGTH_LONG).show();
-                                else {
-                                    Toast.makeText(getApplicationContext(), "Account creation failed.", Toast.LENGTH_LONG).show();
-                                    Log.d(TAG, task.getException().getLocalizedMessage());
-                                }
-                            }
-                        }
-                );
-    }
-
-    private void doTestAuthState() {
-        String msg = "unset";
-        FirebaseUser user;
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        msg = (user == null) ? "Not authenticated" : "Auth :" + user.getEmail();
-        Toast.makeText( getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(TAG, "onStart");
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            Intent intent = new Intent(getApplication(), SignInActivity.class);
+            startActivity(intent);
+        }
     }
 }

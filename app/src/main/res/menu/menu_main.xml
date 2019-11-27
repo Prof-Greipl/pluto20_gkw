@@ -1,28 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="Test Auth State"
-        android:id="@+id/menu_1_TestAuthState"/>
 
-    <item android:title="Create User"
-        android:id="@+id/menu_2_CreateUser"/>
-
-    <item android:title="Sign In Test User"
-        android:id="@+id/menu_3_SignInTestUser"/>
-
-    <item android:title="Sign Out Test User"
-        android:id="@+id/menu_4_SignOutTestUser"/>
-
-    <item android:title="Delete Test User"
-        android:id="@+id/menu_5_DeleteTestUser"/>
-
-    <item android:title="Send Reset Password Mail"
-        android:id="@+id/menu_6_SendResetPasswordMail"/>
-
-    <item android:title="Send Activation Mail"
-        android:id="@+id/menu_7_SendActivationMail"/>
-
-    <item android:title="Gehe zu ManageAccount"
+    <item android:title="Manage Account"
         android:id="@+id/menu_main_manage_account"/>
 
 </menu>
