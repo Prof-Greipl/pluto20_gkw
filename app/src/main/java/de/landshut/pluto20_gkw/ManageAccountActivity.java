@@ -83,6 +83,7 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
             // Abmelden
             FirebaseAuth.getInstance().signOut();
             Toast.makeText(getApplicationContext(), "You are signed out.", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -101,6 +102,7 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 Toast.makeText(getApplicationContext(), "Account deleted." , Toast.LENGTH_LONG).show();
+                                finish();
                             } else {
                                 Toast.makeText(getApplicationContext(), "Account deletion failed.", Toast.LENGTH_LONG).show();
                                 Log.d(TAG, task.getException().getLocalizedMessage());

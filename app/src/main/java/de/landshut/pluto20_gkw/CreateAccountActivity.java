@@ -62,8 +62,10 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
                         new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful())
-                                    Toast.makeText( getApplicationContext(), "Account created.", Toast.LENGTH_LONG).show();
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(getApplicationContext(), "Account created.", Toast.LENGTH_LONG).show();
+                                    finish();
+                                }
                                 else {
                                     Toast.makeText(getApplicationContext(), "Account creation failed.", Toast.LENGTH_LONG).show();
                                     Log.d(TAG, task.getException().getLocalizedMessage());

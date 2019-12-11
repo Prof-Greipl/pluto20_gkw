@@ -3,6 +3,7 @@ package de.landshut.pluto20_gkw;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -52,6 +53,15 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
+    protected void onStart(){
+        super.onStart();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null){
+            Log.d(TAG,"Left SignIn because we have a user object.");
+            finish();
+        }
+    }
+    @Override
     public void onClick(View v) {
         switch( v.getId() ){
             case R.id.sign_in_button_sign_in:
@@ -63,7 +73,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 return;
 
             case R.id.sign_in_button_create_account:
-                // TODO weiter zu create account
+                Intent intent  = new Intent( getApplication(), CreateAccountActivity.class);
+                startActivity( intent );
                 return;
         }
     }
@@ -91,6 +102,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                                     if (task.isSuccessful()) {
                                         FirebaseUser nUser = FirebaseAuth.getInstance().getCurrentUser();
                                         Toast.makeText(getApplicationContext(), "You are signed in as " + nUser.getEmail(), Toast.LENGTH_LONG).show();
+                                        finish();
                                     }
                                     else {
                                         Toast.makeText(getApplicationContext(), "Sign in failed.", Toast.LENGTH_LONG).show();
