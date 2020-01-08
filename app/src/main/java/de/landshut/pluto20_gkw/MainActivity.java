@@ -12,34 +12,27 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import de.landshut.pluto20_gkw.model.Post;
-import de.landshut.pluto20_gkw.test.PostTestData;
 
 public class MainActivity extends AppCompatActivity {
 
     ChildEventListener mChildEventListener;
+    boolean mListenerRunning;
     Query mPostQuery;
 
     ArrayAdapter<Post> mAdapter;
@@ -53,8 +46,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"onCreateCalled.");
         setContentView(R.layout.activity_main);
 
-        // TODO: remove later - only for testing
-        mPostList = (ArrayList<Post>) PostTestData.createTestdata();
+        mPostList = new ArrayList<Post>();
 
         mAdapter = new ArrayAdapter<Post>(
                 this,
@@ -71,10 +63,12 @@ public class MainActivity extends AppCompatActivity {
                 line1 = view.findViewById(android.R.id.text1);
                 line2 = view.findViewById(android.R.id.text2);
 
-                line1.setText("Position :" + position);
-                line2.setText("leer");
+                Post p = getItem( mPostList.size() - 1 - position );
 
-                Log.d(TAG, "called getView mit Position " + position);
+
+                line1.setText(p.title + "  (" + p.author + ")" );
+                line2.setText(p.text);
+
                 return view;
             }
         };
@@ -86,9 +80,9 @@ public class MainActivity extends AppCompatActivity {
         mListView.setAdapter(mAdapter);
 
         // Set Listener for Firebase Realtime Database
-        mPostQuery = FirebaseDatabase.getInstance().getReference("profs/");
+        mPostQuery = FirebaseDatabase.getInstance().getReference("posts/").limitToLast(5);
         mChildEventListener = getChildEventListener();
-        mPostQuery.addChildEventListener( mChildEventListener );
+        mListenerRunning = false;
 
     }
 
@@ -115,24 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity( intent );
                 return true;
 
-            case R.id.menu_main_test_write:
-                // TODO: just for testing; remove in productive version
-                Map<String, Object> testMap = new HashMap<>();
-                testMap.put("name","Greipl");
-                testMap.put("gehalt", 270);
-                testMap.put("fakultät", true);
 
-                // Schreiben in die Datenbank...
-                DatabaseReference mDatabase;
-                try {
-                    mDatabase = FirebaseDatabase.getInstance().getReference("profs/");
-                    mDatabase.push().setValue( testMap );
-                    Log.d(TAG, "Schreiben erfolgreich");
-                } catch (Exception e){
-                    Log.d(TAG, "Fehler beim Schreiben : " + e.getLocalizedMessage());
-                }
-
-                return true;
         }
         return true;
     }
@@ -145,13 +122,31 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user == null) {
-            Log.d(TAG,"User not authenticated. Go to SignInActivity..");
+
+            resetApp();
+
             Intent intent = new Intent(getApplication(), SignInActivity.class);
             startActivity(intent);
         }
         else {
+            if (!mListenerRunning){
+                mPostList.clear();
+                mAdapter.notifyDataSetChanged();
+                mPostQuery.addChildEventListener( mChildEventListener );
+                mListenerRunning = true;
+            }
+
             Log.d(TAG,"User authenticated: " + user.getEmail());
         }
+    }
+
+    private void resetApp() {
+        if (mListenerRunning){
+            mPostQuery.removeEventListener( mChildEventListener );
+            mListenerRunning = false;
+        }
+        mPostList.clear();
+        mAdapter.notifyDataSetChanged();
     }
 
     private ChildEventListener getChildEventListener(){
@@ -159,6 +154,9 @@ public class MainActivity extends AppCompatActivity {
         cel = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                // TODO: Check: dataSnapshot == null?
+                mPostList.add( Post.fromSnapshot( dataSnapshot ));
+                mAdapter.notifyDataSetChanged();
                 Log.d(TAG, "onChildAdded :" + dataSnapshot.getKey());
             }
 
@@ -169,6 +167,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                String key = dataSnapshot.getKey();
+                for (int i = 0; i <mPostList.size(); i++){
+
+                    if (mPostList.get(i).firebaseKey.equals( key ) ){
+                        mPostList.remove( i );
+                        mAdapter.notifyDataSetChanged();
+                        break;
+                    }
+                }
+
                 Log.d(TAG, "onChildRemoved :" + dataSnapshot.getKey());
             }
 
@@ -179,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                mListenerRunning = false;
             }
         };
         return cel;
