@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+
         Log.d(TAG,"onCreateCalled.");
         setContentView(R.layout.activity_main);
 
@@ -108,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
                 intent  = new Intent( getApplication(), PostActivity.class);
                 startActivity( intent );
                 return true;
-
 
         }
         return true;

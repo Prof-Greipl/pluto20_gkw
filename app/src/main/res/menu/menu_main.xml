@@ -8,9 +8,5 @@
     <item android:title="Post"
         android:id="@+id/menu_main_post"/>
 
-    <item android:title="Test Write"
-        android:id="@+id/menu_main_test_write"/>
-
-
 
 </menu>
